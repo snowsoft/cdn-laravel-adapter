@@ -2,6 +2,7 @@
 
 namespace CdnServices\Adapters;
 
+use CdnServices\Exceptions\QuotaExceededException;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Contracts\Filesystem\Cloud;
 use Illuminate\Support\Facades\Http;
@@ -98,6 +99,12 @@ class CdnServicesFilesystemAdapter implements Filesystem, Cloud
 
             fclose($tempFile);
 
+            if ($response->status() === 413) {
+                throw new QuotaExceededException(
+                    $response->json('message') ?? $response->json('error') ?? 'Depolama kotası aşıldı'
+                );
+            }
+
             if ($response->successful()) {
                 $data = $response->json();
                 // Store the mapping if needed (path => id)
@@ -105,6 +112,8 @@ class CdnServicesFilesystemAdapter implements Filesystem, Cloud
             }
 
             return false;
+        } catch (QuotaExceededException $e) {
+            throw $e;
         } catch (\Exception $e) {
             return false;
         }

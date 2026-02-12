@@ -2,11 +2,12 @@
 
 namespace CdnServices;
 
+use CdnServices\Exceptions\QuotaExceededException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 
 /**
- * CDN Services API client – yeni özellikler (meta, liste filtreleri, usage, signed URL, işlenmiş URL).
+ * CDN Services API client – meta, liste filtreleri, usage (kota dahil), signed URL, işlenmiş URL, import, placeholder.
  */
 class CdnServicesApi
 {
@@ -74,6 +75,7 @@ class CdnServicesApi
 
     /**
      * Görüntü dosyasını değiştir (PUT replace). $file: UploadedFile veya dosya yolu.
+     * Kota aşımında QuotaExceededException fırlatır.
      */
     public function replace(string $id, $file): ?array
     {
@@ -91,16 +93,97 @@ class CdnServicesApi
             $request = $request->withToken($this->token);
         }
         $response = $request->attach('image', $contents, $filename)->put($this->baseUrl . "/api/image/{$id}");
+        if ($response->status() === 413) {
+            throw new QuotaExceededException(
+                $response->json('message') ?? $response->json('error') ?? 'Depolama kotası aşıldı'
+            );
+        }
         return $response->successful() ? $response->json() : null;
     }
 
     /**
      * Kullanım özeti: fileCount, totalSize, totalSizeMB, viewCountTotal.
+     * Kota tanımlıysa: quotaBytes, quotaMB de döner.
      */
     public function usage(): ?array
     {
         $response = $this->request('get', '/api/usage');
         return $response->successful() ? $response->json() : null;
+    }
+
+    /**
+     * Kota limiti (byte). Tanımlı değilse null.
+     */
+    public function getQuotaBytes(): ?int
+    {
+        $u = $this->usage();
+        return isset($u['quotaBytes']) && $u['quotaBytes'] > 0 ? (int) $u['quotaBytes'] : null;
+    }
+
+    /**
+     * Kalan kota (byte). Kota yoksa null.
+     */
+    public function getQuotaRemaining(): ?int
+    {
+        $u = $this->usage();
+        if (!isset($u['quotaBytes']) || (int) $u['quotaBytes'] <= 0) {
+            return null;
+        }
+        $total = (int) ($u['totalSize'] ?? 0);
+        $quota = (int) $u['quotaBytes'];
+        return max(0, $quota - $total);
+    }
+
+    /**
+     * URL'den resim içe aktar. Kota aşımında QuotaExceededException.
+     */
+    public function importFromUrl(string $url): ?array
+    {
+        $req = Http::timeout($this->timeout)->withHeaders(['Content-Type' => 'application/json']);
+        if ($this->token) {
+            $req = $req->withToken($this->token);
+        }
+        $response = $req->post($this->baseUrl . '/api/import/url', ['url' => $url]);
+        if ($response->status() === 413) {
+            throw new QuotaExceededException(
+                $response->json('message') ?? $response->json('error') ?? 'Depolama kotası aşıldı'
+            );
+        }
+        if (!$response->successful()) {
+            return null;
+        }
+        $data = $response->json();
+        return $data['file'] ?? null;
+    }
+
+    /**
+     * Placeholder görsel oluştur (width, height, text, format vb.). Kota aşımında QuotaExceededException.
+     */
+    public function createPlaceholder(array $options = []): ?array
+    {
+        $body = array_filter([
+            'width' => $options['width'] ?? 300,
+            'height' => $options['height'] ?? 200,
+            'text' => $options['text'] ?? null,
+            'backgroundColor' => $options['backgroundColor'] ?? null,
+            'textColor' => $options['textColor'] ?? null,
+            'format' => $options['format'] ?? 'png',
+        ], fn ($v) => $v !== null && $v !== '');
+        $req = Http::timeout($this->timeout)->withHeaders(['Content-Type' => 'application/json']);
+        if ($this->token) {
+            $req = $req->withToken($this->token);
+        }
+        $response = $req->post($this->baseUrl . '/api/create/placeholder', $body);
+        if ($response->status() === 413) {
+            throw new QuotaExceededException(
+                $response->json('message') ?? $response->json('error') ?? 'Depolama kotası aşıldı'
+            );
+        }
+        if (!$response->successful()) {
+            return null;
+        }
+        $data = $response->json();
+        return $data['file'] ?? null;
     }
 
     /**
