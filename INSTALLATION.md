@@ -7,7 +7,7 @@ Bu kılavuz, CDN Services Laravel adapter'ını Laravel projenize nasıl entegre
 ## 📋 Gereksinimler
 
 - PHP >= 8.0
-- Laravel >= 9.0
+- Laravel 9.x, 10.x, 11.x veya 12.x
 - CDN Services Node.js backend çalışıyor olmalı
 
 ## 🔧 Kurulum Adımları

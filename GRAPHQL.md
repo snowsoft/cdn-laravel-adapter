@@ -4,7 +4,7 @@ Laravel projenizde CDN Services’i **GraphQL** ile kullanmak ve **resim yüklem
 
 ## Gereksinimler
 
-- Laravel 9+
+- Laravel 9.x, 10.x, 11.x veya 12.x
 - CDN Services Laravel adapter kurulu ve yapılandırılmış ([INSTALLATION.md](INSTALLATION.md))
 - CDN Services backend çalışır durumda ve bağlantı ayarları (`.env`: `CDN_SERVICES_BASE_URL`, `CDN_SERVICES_TOKEN`) doğru
 

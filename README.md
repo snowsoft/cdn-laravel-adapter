@@ -25,7 +25,7 @@ Laravel projenizin `composer.json` dosyasına repository ekleyin, ardından pake
 composer require snowsoft/cdn-laravel-adapter
 ```
 
-Laravel 11+ otomatik paket keşfi ile provider/alias kaydı yapılabilir; gerekirse `config/app.php` içinde `CdnServices\CdnServicesServiceProvider` ekleyin.
+Laravel 9–12 ile otomatik paket keşfi (provider/alias) desteklenir; gerekirse `config/app.php` içinde `CdnServices\CdnServicesServiceProvider` ekleyin.
 
 Config yayınlama:
 
