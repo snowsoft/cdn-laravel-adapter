@@ -14,6 +14,15 @@ return [
     
     'token' => env('CDN_SERVICES_TOKEN', null),
     
+    /*
+    |--------------------------------------------------------------------------
+    | Registration Token (Kullanıcı kaydı)
+    |--------------------------------------------------------------------------
+    | Backend'de REGISTRATION_TOKEN tanımlıysa kayıt için zorunludur.
+    | CdnServicesAuthService::register() bu değeri kullanır (veya parametre ile geçilebilir).
+    */
+    'registration_token' => env('CDN_SERVICES_REGISTRATION_TOKEN', null),
+    
     'disk' => env('CDN_SERVICES_DISK', 'local'),
     
     'timeout' => env('CDN_SERVICES_TIMEOUT', 30),

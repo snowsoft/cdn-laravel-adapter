@@ -27,6 +27,14 @@ class CdnServicesServiceProvider extends ServiceProvider
             }
             return new CdnServicesApi($config);
         });
+
+        $this->app->singleton('cdn-services.auth', function ($app) {
+            $config = config('cdn-services', []);
+            if (empty($config['base_url'])) {
+                $config = array_merge($config, config('filesystems.disks.cdn-services', []));
+            }
+            return new CdnServicesAuthService($config);
+        });
     }
 
     /**

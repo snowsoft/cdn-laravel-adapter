@@ -121,6 +121,8 @@ veya manuel: `cp packages/cdn-laravel-adapter/config/cdn-services.php config/`
 ```env
 CDN_SERVICES_BASE_URL=http://localhost:3012
 CDN_SERVICES_TOKEN=your-jwt-token-here
+# Backend'de kayıt token zorunluysa (CdnServicesAuth::register için)
+CDN_SERVICES_REGISTRATION_TOKEN=
 CDN_SERVICES_DISK=local
 CDN_SERVICES_DEFAULT_DISK=local
 CDN_SERVICES_TIMEOUT=30

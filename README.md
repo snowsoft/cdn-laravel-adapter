@@ -68,6 +68,8 @@ composer require snowsoft/cdn-laravel-adapter
 ```env
 CDN_SERVICES_BASE_URL=http://localhost:3012
 CDN_SERVICES_TOKEN=your-jwt-token-here
+# Backend'de REGISTRATION_TOKEN zorunluysa; kayıt için (CdnServicesAuth::register)
+CDN_SERVICES_REGISTRATION_TOKEN=
 CDN_SERVICES_DISK=local
 CDN_SERVICES_DEFAULT_DISK=local
 CDN_SERVICES_TIMEOUT=30
@@ -111,6 +113,38 @@ Storage::disk('cdn-services')->delete('images/photo.jpg');
 $url = Storage::disk('cdn-services')->url('images/photo.jpg');
 Storage::disk('cdn-services')->copy('images/photo.jpg', 'images/photo-copy.jpg');
 Storage::disk('cdn-services')->move('images/photo.jpg', 'images/new-photo.jpg');
+```
+
+### CdnServicesAuth – kayıt, giriş, token
+
+Backend'de kullanıcı kaydı (registration token zorunlu olabilir), giriş ve CDN işlemleri için JWT almak:
+
+```php
+use CdnServices\Facades\CdnServicesAuth;
+
+// Kayıt (registration token config'ten veya 2. parametre ile)
+$result = CdnServicesAuth::register([
+    'email' => 'user@example.com',
+    'password' => 'secret123',
+    'name' => 'Ad Soyad',
+]);
+// $result['token'] → JWT (CDN_SERVICES_TOKEN olarak kullanılabilir)
+// $result['user'] → id, email, name, role, createdAt
+
+// Giriş
+$result = CdnServicesAuth::login('user@example.com', 'secret123');
+if ($result) {
+    $jwt = $result['token'];
+}
+
+// Sunucu tarafında bir kullanıcı için JWT üret (CDN işlemleri için)
+$tokenPayload = CdnServicesAuth::tokenForUser($userId, 'user@example.com', 'user');
+$jwt = $tokenPayload['token'] ?? null;
+
+// Kayıt için token zorunlu mu?
+if (CdnServicesAuth::requiresRegistrationToken()) {
+    // Config'te CDN_SERVICES_REGISTRATION_TOKEN tanımlı
+}
 ```
 
 ### CdnServices facade
@@ -219,6 +253,8 @@ try {
 ## API quick reference
 
 **Storage `put()` options:** `disk`, `caption`, `tags`, `folder`, `visibility`
+
+**CdnServicesAuth:** `register`, `login`, `tokenForUser`, `getRegistrationToken`, `requiresRegistrationToken`
 
 **CdnServicesApi:** `getInfo`, `listImages`, `updateMeta`, `replace`, `usage`, `getQuotaBytes`, `getQuotaRemaining`, `importFromUrl`, `createPlaceholder`, `bulkDelete`, `getSignedUrl`, `processedUrl`
 

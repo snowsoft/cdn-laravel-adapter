@@ -41,7 +41,8 @@
             ],
             "aliases": {
                 "CdnServices": "CdnServices\\Facades\\CdnServices",
-                "CdnServicesApi": "CdnServices\\Facades\\CdnServicesApi"
+                "CdnServicesApi": "CdnServices\\Facades\\CdnServicesApi",
+                "CdnServicesAuth": "CdnServices\\Facades\\CdnServicesAuth"
             }
         }
     },
