@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static array bulkDelete(array $ids)
  * @method static array|null getSignedUrl(string $id, int $expiresIn = 3600)
  * @method static string processedUrl(string $id, string $size, string $format, array $query = [])
+ * @method static string|null cloudflareProcessedUrl(string $id, array $options = [])
  */
 class CdnServicesApi extends Facade
 {

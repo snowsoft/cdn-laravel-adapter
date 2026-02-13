@@ -316,7 +316,7 @@ try {
 
 **CdnServicesPdf (DDD):** `upload(UploadedFile)`, `list()`, `createSession(documentId)`, `sessionUrl(PdfSession)`, `delete(documentId)`, `isEnabled()`
 
-**CdnServicesApi:** `getInfo`, `listImages`, `updateMeta`, `replace`, `usage`, `getQuotaBytes`, `getQuotaRemaining`, `importFromUrl`, `createPlaceholder`, `bulkDelete`, `getSignedUrl`, `processedUrl`
+**CdnServicesApi:** `getInfo`, `listImages`, `updateMeta`, `replace`, `usage`, `getQuotaBytes`, `getQuotaRemaining`, `importFromUrl`, `createPlaceholder`, `bulkDelete`, `getSignedUrl`, `processedUrl`, `cloudflareProcessedUrl`
 
 **Disk methods:** `exists`, `get`, `put`, `delete`, `copy`, `move`, `size`, `lastModified`, `mimeType`, `url`, `temporaryUrl`, `readStream`, `writeStream`, `files`
 

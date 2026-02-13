@@ -230,4 +230,54 @@ class CdnServicesApi
         $queryString = $params ? '?' . http_build_query($params) : '';
         return $this->baseUrl . "/api/image/{$id}/{$size}/{$format}" . $queryString;
     }
+
+    /**
+     * Cloudflare Image Resizing URL (cdn-cgi/image). Zone’da resizing açıksa edge’de dönüştürülür.
+     * Config’te cloudflare_image_resizing_base_url tanımlı olmalı.
+     *
+     * @param  array{width?: int, height?: int, fit?: string, format?: string, quality?: int, gravity?: string, rotate?: int, sharpen?: int, blur?: int}  $options
+     */
+    public function cloudflareProcessedUrl(string $id, array $options = []): ?string
+    {
+        $originBase = rtrim($this->baseUrl, '/');
+        $cfBase = config('cdn-services.cloudflare_image_resizing_base_url', '');
+        $cfBase = $cfBase ? trim($cfBase) : null;
+        if (! $cfBase) {
+            return null;
+        }
+        $cfBase = rtrim($cfBase, '/');
+        $originImageUrl = $originBase . '/api/image/' . $id;
+        $parts = [];
+        if (isset($options['width'])) {
+            $parts[] = 'width=' . (int) $options['width'];
+        }
+        if (isset($options['height'])) {
+            $parts[] = 'height=' . (int) $options['height'];
+        }
+        if (! empty($options['fit'])) {
+            $parts[] = 'fit=' . $options['fit'];
+        }
+        if (! empty($options['format'])) {
+            $parts[] = 'format=' . $options['format'];
+        }
+        if (isset($options['quality'])) {
+            $parts[] = 'quality=' . (int) $options['quality'];
+        }
+        if (! empty($options['gravity'])) {
+            $parts[] = 'gravity=' . $options['gravity'];
+        }
+        if (isset($options['rotate'])) {
+            $parts[] = 'rotate=' . (int) $options['rotate'];
+        }
+        if (isset($options['sharpen'])) {
+            $parts[] = 'sharpen=' . (int) $options['sharpen'];
+        }
+        if (isset($options['blur'])) {
+            $parts[] = 'blur=' . (int) $options['blur'];
+        }
+        if (empty($parts)) {
+            $parts = ['width=800', 'format=webp', 'quality=85', 'fit=scale-down'];
+        }
+        return $cfBase . '/cdn-cgi/image/' . implode(',', $parts) . '/' . $originImageUrl;
+    }
 }

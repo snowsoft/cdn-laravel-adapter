@@ -71,5 +71,14 @@ return [
         'enabled' => env('CDN_SERVICES_CACHE_ENABLED', true),
         'ttl' => env('CDN_SERVICES_CACHE_TTL', 3600), // 1 hour
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Cloudflare Image Resizing
+    |--------------------------------------------------------------------------
+    | Zone URL (resizing’in açık olduğu domain). Boş ise cloudflareProcessedUrl null döner.
+    | Backend’de CLOUDFLARE_IMAGE_RESIZING_ENABLED + CLOUDFLARE_IMAGE_RESIZING_BASE_URL ile uyumlu.
+    */
+    'cloudflare_image_resizing_base_url' => env('CDN_SERVICES_CLOUDFLARE_IMAGE_RESIZING_BASE_URL', null),
 ];
 
