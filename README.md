@@ -9,6 +9,16 @@ Laravel Storage adapter for CDN Services Node.js backend. Use CDN Services as a 
 - **Packagist:** [packagist.org/packages/snowsoft/cdn-laravel-adapter](https://packagist.org/packages/snowsoft/cdn-laravel-adapter)
 - **Source:** [github.com/snowsoft/cdn-laravel-adapter](https://github.com/snowsoft/cdn-laravel-adapter)
 
+### Özellikler
+
+| Özellik | Açıklama |
+|--------|----------|
+| **Storage disk** | `Storage::disk('cdn-services')` ile put/get/delete/url, caption, tags, folder, visibility |
+| **CdnServicesAuth** | Kayıt (registration token), giriş, `tokenForUser` ile JWT |
+| **Depolama kotası** | `QuotaExceededException`, `getQuotaRemaining()`, `usage()` ile quotaBytes/quotaMB |
+| **CdnServicesPdf** | PDF yükleme, session ile süreli erişim, DDD (PdfDocument, PdfSession) |
+| **CdnServicesApi** | Meta, list, usage, import, placeholder, signed URL, `processedUrl`, **Cloudflare** `cloudflareProcessedUrl` |
+
 ---
 
 ## DDD yapısı
@@ -222,6 +232,19 @@ $originalUrl = Storage::disk('cdn-services')->url($imageId);
 $thumb = CdnServicesApi::processedUrl($imageId, 'thumbnail', 'jpeg');
 $custom = CdnServicesApi::processedUrl($imageId, '800x600', 'webp', ['quality' => 75, 'watermark' => true]);
 ```
+
+### Cloudflare Image Resizing
+
+Backend’de Cloudflare Image Resizing açıksa, edge’de resize/format/quality için URL alınır:
+
+```php
+$url = CdnServicesApi::cloudflareProcessedUrl($imageId, '800x600', 'webp', [
+    'quality' => 80, 'fit' => 'cover', 'crop' => 'smart',
+]);
+// Backend GET /api/image/{id}/cloudflare-url ile aynı parametreler
+```
+
+Detay: CDN Services [docs/CLOUDFLARE_IMAGE_RESIZING.md](https://github.com/snowsoft/cdn-services/blob/main/docs/CLOUDFLARE_IMAGE_RESIZING.md).
 
 ### CdnServicesPdf – PDF depolama (blockchain, süreli session)
 
