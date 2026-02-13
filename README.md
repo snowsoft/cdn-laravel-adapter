@@ -4,10 +4,22 @@
 [![Total Downloads](https://img.shields.io/packagist/dt/snowsoft/cdn-laravel-adapter.svg?style=flat-square)](https://packagist.org/packages/snowsoft/cdn-laravel-adapter)
 [![PHP from Packagist](https://img.shields.io/packagist/php-v/snowsoft/cdn-laravel-adapter?style=flat-square)](https://packagist.org/packages/snowsoft/cdn-laravel-adapter)
 
-Laravel Storage adapter for CDN Services Node.js backend. Use CDN Services as a Laravel filesystem disk (Laravel 9, 10, 11, 12).
+Laravel Storage adapter for CDN Services Node.js backend. Use CDN Services as a Laravel filesystem disk (Laravel 9, 10, 11, 12). **Domain Driven Design (DDD)** uyumlu yapı: Domain (value objects, port interfaces), Application (use case services), Infrastructure (HTTP gateway).
 
 - **Packagist:** [packagist.org/packages/snowsoft/cdn-laravel-adapter](https://packagist.org/packages/snowsoft/cdn-laravel-adapter)
 - **Source:** [github.com/snowsoft/cdn-laravel-adapter](https://github.com/snowsoft/cdn-laravel-adapter)
+
+---
+
+## DDD yapısı
+
+| Katman | Açıklama |
+|--------|----------|
+| **Domain** | `Domain\Pdf\PdfDocument`, `PdfSession` (value objects); `PdfStorageGatewayInterface` (port). |
+| **Application** | `Application\Pdf\PdfStorageService` – PDF use case'leri (upload, list, session, delete). |
+| **Infrastructure** | `Infrastructure\Http\PdfStorageGateway` – backend `/api/pdf/*` HTTP adapter. |
+
+Bağımlılık Domain → Application → Infrastructure yönünde; uygulama `PdfStorageGatewayInterface` ile tip bağımlılığı kurar, implementasyon ServiceProvider'da bağlanır.
 
 ---
 
@@ -211,6 +223,52 @@ $thumb = CdnServicesApi::processedUrl($imageId, 'thumbnail', 'jpeg');
 $custom = CdnServicesApi::processedUrl($imageId, '800x600', 'webp', ['quality' => 75, 'watermark' => true]);
 ```
 
+### CdnServicesPdf – PDF depolama (blockchain, süreli session)
+
+Backend'de `PDF_STORAGE_ENABLED=true` ise kullanılır; resim alanından bağımsızdır.
+
+```php
+use CdnServices\Facades\CdnServicesPdf;
+use CdnServices\Domain\Pdf\PdfDocument;
+use CdnServices\Domain\Pdf\PdfSession;
+
+if (!CdnServicesPdf::isEnabled()) {
+    return; // PDF storage kapalı
+}
+
+// Yükle (value object döner)
+$doc = CdnServicesPdf::upload($request->file('pdf'));
+if ($doc instanceof PdfDocument) {
+    $id = $doc->id;
+}
+
+// Listele
+$documents = CdnServicesPdf::list(); // list<PdfDocument>
+
+// Süreli erişim session'ı al
+$session = CdnServicesPdf::createSession($doc->id);
+if ($session instanceof PdfSession) {
+    $url = CdnServicesPdf::sessionUrl($session); // GET ile PDF açılır
+    // veya: $session->url(config('cdn-services.base_url'));
+}
+
+// Sil
+CdnServicesPdf::delete($doc->id);
+```
+
+**Constructor injection (DDD):** Uygulama sınıflarında port kullanmak için:
+
+```php
+use CdnServices\Domain\Pdf\PdfStorageGatewayInterface;
+
+class MyController extends Controller
+{
+    public function __construct(
+        private PdfStorageGatewayInterface $pdfStorage
+    ) {}
+}
+```
+
 ---
 
 ## Customization
@@ -255,6 +313,8 @@ try {
 **Storage `put()` options:** `disk`, `caption`, `tags`, `folder`, `visibility`
 
 **CdnServicesAuth:** `register`, `login`, `tokenForUser`, `getRegistrationToken`, `requiresRegistrationToken`
+
+**CdnServicesPdf (DDD):** `upload(UploadedFile)`, `list()`, `createSession(documentId)`, `sessionUrl(PdfSession)`, `delete(documentId)`, `isEnabled()`
 
 **CdnServicesApi:** `getInfo`, `listImages`, `updateMeta`, `replace`, `usage`, `getQuotaBytes`, `getQuotaRemaining`, `importFromUrl`, `createPlaceholder`, `bulkDelete`, `getSignedUrl`, `processedUrl`
 
