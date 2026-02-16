@@ -1,55 +1,57 @@
 {
-    "name": "snowsoft/cdn-laravel-adapter",
-    "description": "Laravel Storage adapter for CDN Services Node.js backend",
-    "type": "library",
-    "license": "MIT",
-    "keywords": [
-        "laravel",
-        "cdn",
-        "storage",
-        "filesystem",
-        "cdn-services",
-        "image"
-    ],
-    "homepage": "https://github.com/snowsoft/cdn-laravel-adapter",
-    "support": {
-        "issues": "https://github.com/snowsoft/cdn-laravel-adapter/issues",
-        "source": "https://github.com/snowsoft/cdn-laravel-adapter"
-    },
-    "authors": [
-        {
-            "name": "Snowsoft",
-            "homepage": "https://github.com/snowsoft"
-        }
-    ],
-    "require": {
-        "php": "^8.0",
-        "illuminate/support": "^9.0|^10.0|^11.0|^12.0",
-        "illuminate/filesystem": "^9.0|^10.0|^11.0|^12.0",
-        "illuminate/http": "^9.0|^10.0|^11.0|^12.0"
-    },
-    "autoload": {
-        "psr-4": {
-            "CdnServices\\": "src/"
-        }
-    },
-    "extra": {
-        "laravel": {
-            "providers": [
-                "CdnServices\\CdnServicesServiceProvider",
-                "CdnServices\\CdnServicesGraphQLServiceProvider"
-            ],
-            "aliases": {
-                "CdnServices": "CdnServices\\Facades\\CdnServices",
-                "CdnServicesApi": "CdnServices\\Facades\\CdnServicesApi",
-                "CdnServicesAuth": "CdnServices\\Facades\\CdnServicesAuth",
-                "CdnServicesPdf": "CdnServices\\Facades\\CdnServicesPdf"
-            }
-        }
-    },
-    "minimum-stability": "dev",
-    "prefer-stable": true,
-    "suggest": {
-        "rebing/graphql-laravel": "GraphQL ve resim yükleme eklentisi için"
+  "name": "snowsoft/cdn-laravel-adapter",
+  "description": "Laravel Storage adapter for CDN Services Node.js backend",
+  "type": "library",
+  "license": "MIT",
+  "keywords": [
+    "laravel",
+    "cdn",
+    "storage",
+    "filesystem",
+    "cdn-services",
+    "image"
+  ],
+  "homepage": "https://github.com/snowsoft/cdn-laravel-adapter",
+  "support": {
+    "issues": "https://github.com/snowsoft/cdn-laravel-adapter/issues",
+    "source": "https://github.com/snowsoft/cdn-laravel-adapter"
+  },
+  "authors": [
+    {
+      "name": "Snowsoft",
+      "homepage": "https://github.com/snowsoft"
     }
+  ],
+  "require": {
+    "php": "^8.0",
+    "illuminate/support": "^9.0|^10.0|^11.0|^12.0",
+    "illuminate/filesystem": "^9.0|^10.0|^11.0|^12.0",
+    "illuminate/http": "^9.0|^10.0|^11.0|^12.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "CdnServices\\": "src/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "CdnServices\\CdnServicesServiceProvider",
+        "CdnServices\\CdnServicesGraphQLServiceProvider"
+      ],
+      "aliases": {
+        "CdnServices": "CdnServices\\Facades\\CdnServices",
+        "CdnServicesApi": "CdnServices\\Facades\\CdnServicesApi",
+        "CdnServicesAuth": "CdnServices\\Facades\\CdnServicesAuth",
+        "CdnServicesPdf": "CdnServices\\Facades\\CdnServicesPdf",
+        "CdnApi": "CdnServices\\Facades\\CdnApi",
+        "CdnBulk": "CdnServices\\Facades\\CdnBulk"
+      }
+    }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "suggest": {
+    "rebing/graphql-laravel": "GraphQL ve resim yükleme eklentisi için"
+  }
 }

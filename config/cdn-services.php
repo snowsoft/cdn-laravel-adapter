@@ -13,6 +13,8 @@ return [
     'base_url' => env('CDN_SERVICES_BASE_URL', 'http://localhost:3012'),
     
     'token' => env('CDN_SERVICES_TOKEN', null),
+    'api_key' => env('CDN_SERVICES_API_KEY', null),
+    'bearer_token' => env('CDN_SERVICES_BEARER_TOKEN', null),
     
     /*
     |--------------------------------------------------------------------------

@@ -18,6 +18,7 @@ Laravel Storage adapter for CDN Services Node.js backend. Use CDN Services as a 
 | **Depolama kotası** | `QuotaExceededException`, `getQuotaRemaining()`, `usage()` ile quotaBytes/quotaMB |
 | **CdnServicesPdf** | PDF yükleme, session ile süreli erişim, DDD (PdfDocument, PdfSession) |
 | **CdnServicesApi** | Meta, list, usage, import, placeholder, signed URL, `processedUrl`, **Cloudflare** `cloudflareProcessedUrl` |
+| **CdnApi / CdnBulk** | Toplu işlem: `CdnApi::upload`, `importBatch`, `bulkDelete`; `CdnBulk::uploadMany`; Artisan: `cdn:bulk-upload`, `cdn:import-urls`, `cdn:bulk-delete` |
 
 ---
 
@@ -28,8 +29,52 @@ Laravel Storage adapter for CDN Services Node.js backend. Use CDN Services as a 
 | **Domain** | `Domain\Pdf\PdfDocument`, `PdfSession` (value objects); `PdfStorageGatewayInterface` (port). |
 | **Application** | `Application\Pdf\PdfStorageService` – PDF use case'leri (upload, list, session, delete). |
 | **Infrastructure** | `Infrastructure\Http\PdfStorageGateway` – backend `/api/pdf/*` HTTP adapter. |
+| **Bulk (Contracts/Services)** | `Contracts\CdnApiClientInterface`, `CdnBulkUploadServiceInterface`; `Services\CdnApiClient`, `CdnBulkUploadService`; DTOs: `BulkUploadResult`, `BatchImportResult`, `BulkDeleteResult`. |
 
 Bağımlılık Domain → Application → Infrastructure yönünde; uygulama `PdfStorageGatewayInterface` ile tip bağımlılığı kurar, implementasyon ServiceProvider'da bağlanır.
+
+---
+
+## Toplu işlem (DDD: CdnApi, CdnBulk, Artisan)
+
+**Servisler:** `CdnApiClientInterface` (upload, importBatch, bulkDelete), `CdnBulkUploadServiceInterface` (uploadMany). **Facades:** `CdnApi`, `CdnBulk` (alias'ları eklemek için `config/app.php` veya composer `extra.laravel.aliases` içine `CdnApi` → `CdnServices\Facades\CdnApi`, `CdnBulk` → `CdnServices\Facades\CdnBulk` ekleyin).
+
+**Artisan komutları:**
+
+```bash
+# Toplu dosya yükleme (dizin veya tek dosya)
+php artisan cdn:bulk-upload /path/to/products --bucket=local --folder=ürünler --tags=ürün,yeni
+
+# URL listesinden import (--file= veya argüman)
+php artisan cdn:import-urls --file=urls.txt --bucket=local
+
+# Toplu silme
+php artisan cdn:bulk-delete --file=ids.txt
+```
+
+**Kod örneği:**
+
+```php
+use CdnServices\Contracts\CdnBulkUploadServiceInterface;
+use CdnServices\Facades\CdnApi;
+use CdnServices\DTOs\BatchImportResult;
+use CdnServices\DTOs\BulkDeleteResult;
+
+// Toplu yükleme (controller'da inject)
+$result = app(CdnBulkUploadServiceInterface::class)->uploadMany(
+    ['/path/to/1.jpg', '/path/to/2.png'],
+    ['bucket' => 'local', 'folder' => 'ürünler']
+);
+$result->uploadedIds();
+
+// URL import
+$res = CdnApi::importBatch(['https://example.com/1.jpg'], ['bucket' => 'local']);
+$result = BatchImportResult::fromApiResponse($res);
+
+// Toplu silme
+$res = CdnApi::bulkDelete(['id1', 'id2']);
+$result = BulkDeleteResult::fromApiResponse($res);
+```
 
 ---
 
