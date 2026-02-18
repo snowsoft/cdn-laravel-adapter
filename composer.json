@@ -45,7 +45,8 @@
         "CdnServicesAuth": "CdnServices\\Facades\\CdnServicesAuth",
         "CdnServicesPdf": "CdnServices\\Facades\\CdnServicesPdf",
         "CdnApi": "CdnServices\\Facades\\CdnApi",
-        "CdnBulk": "CdnServices\\Facades\\CdnBulk"
+        "CdnBulk": "CdnServices\\Facades\\CdnBulk",
+        "CdnMinify": "CdnServices\\Facades\\CdnMinify"
       }
     }
   },

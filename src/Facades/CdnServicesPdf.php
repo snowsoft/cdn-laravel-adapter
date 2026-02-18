@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static PdfSession|null createSession(string $documentId)
  * @method static string sessionUrl(PdfSession $session)
  * @method static bool delete(string $documentId)
+ * @method static PdfDocument|null generateFromHtml(string $html, string $filename = 'generated.pdf')
  * @method static bool isEnabled()
  *
  * @see PdfStorageService

@@ -40,6 +40,11 @@ class PdfStorageService
         return $this->gateway->delete($documentId);
     }
 
+    public function generateFromHtml(string $html, string $filename = 'generated.pdf'): ?PdfDocument
+    {
+        return $this->gateway->generateFromHtml($html, $filename);
+    }
+
     public function isEnabled(): bool
     {
         return $this->gateway->isEnabled();

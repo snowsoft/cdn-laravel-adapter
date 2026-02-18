@@ -35,6 +35,13 @@ interface PdfStorageGatewayInterface
     public function delete(string $documentId): bool;
 
     /**
+     * HTML'den PDF oluştur ve depola (PDF_GENERATE_SERVICE_URL gerekir).
+     *
+     * @return PdfDocument|null
+     */
+    public function generateFromHtml(string $html, string $filename = 'generated.pdf'): ?PdfDocument;
+
+    /**
      * PDF depolama backend'de aktif mi?
      */
     public function isEnabled(): bool;

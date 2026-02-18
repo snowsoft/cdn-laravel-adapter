@@ -16,9 +16,10 @@ Laravel Storage adapter for CDN Services Node.js backend. Use CDN Services as a 
 | **Storage disk** | `Storage::disk('cdn-services')` ile put/get/delete/url, caption, tags, folder, visibility |
 | **CdnServicesAuth** | Kayıt (registration token), giriş, `tokenForUser` ile JWT |
 | **Depolama kotası** | `QuotaExceededException`, `getQuotaRemaining()`, `usage()` ile quotaBytes/quotaMB |
-| **CdnServicesPdf** | PDF yükleme, session ile süreli erişim, DDD (PdfDocument, PdfSession) |
+| **CdnServicesPdf** | PDF yükleme, **HTML'den PDF oluşturma** (`generateFromHtml`), session ile süreli erişim, DDD (PdfDocument, PdfSession) |
 | **CdnServicesApi** | Meta, list, usage, import, placeholder, signed URL, `processedUrl`, **Cloudflare** `cloudflareProcessedUrl` |
 | **CdnApi / CdnBulk** | Toplu işlem: `CdnApi::upload`, `importBatch`, `bulkDelete`; `CdnBulk::uploadMany`; Artisan: `cdn:bulk-upload`, `cdn:import-urls`, `cdn:bulk-delete` |
+| **CdnMinify** | JS/CSS sıkıştırma (minify), **publish** (ledger + kalıcı asset), ledger doğrulama; DDD (MinifyPublishResult, LedgerVerification). |
 
 ---
 
@@ -26,12 +27,39 @@ Laravel Storage adapter for CDN Services Node.js backend. Use CDN Services as a 
 
 | Katman | Açıklama |
 |--------|----------|
-| **Domain** | `Domain\Pdf\PdfDocument`, `PdfSession` (value objects); `PdfStorageGatewayInterface` (port). |
-| **Application** | `Application\Pdf\PdfStorageService` – PDF use case'leri (upload, list, session, delete). |
-| **Infrastructure** | `Infrastructure\Http\PdfStorageGateway` – backend `/api/pdf/*` HTTP adapter. |
+| **Domain** | `Domain\Pdf\PdfDocument`, `PdfSession` (value objects); `PdfStorageGatewayInterface` (port). **Minify:** `Domain\Minify\MinifyPublishResult`, `LedgerVerification`; `MinifyGatewayInterface` (port). |
+| **Application** | `Application\Pdf\PdfStorageService` – PDF use case'leri. **Minify:** `Application\Minify\MinifyService` – minifyJs, minifyCss, publishJs, publishCss, assetUrl, verifyLedger. |
+| **Infrastructure** | `Infrastructure\Http\PdfStorageGateway` – backend `/api/pdf/*`. **Minify:** `Infrastructure\Http\MinifyGateway` – backend `/api/minify/*`. |
 | **Bulk (Contracts/Services)** | `Contracts\CdnApiClientInterface`, `CdnBulkUploadServiceInterface`; `Services\CdnApiClient`, `CdnBulkUploadService`; DTOs: `BulkUploadResult`, `BatchImportResult`, `BulkDeleteResult`. |
 
-Bağımlılık Domain → Application → Infrastructure yönünde; uygulama `PdfStorageGatewayInterface` ile tip bağımlılığı kurar, implementasyon ServiceProvider'da bağlanır.
+Bağımlılık Domain → Application → Infrastructure yönünde; uygulama `PdfStorageGatewayInterface` / `MinifyGatewayInterface` ile tip bağımlılığı kurar, implementasyon ServiceProvider'da bağlanır.
+
+### Minify (DDD)
+
+Backend’de Minify servisi açıksa (`MINIFY_SERVICE_URL`), **CdnMinify** facade ile JS/CSS sıkıştırma, yayınlama (ledger + asset) ve ledger doğrulama kullanılır:
+
+```php
+use CdnServices\Facades\CdnMinify;
+use CdnServices\Domain\Minify\MinifyPublishResult;
+
+// Sadece sıkıştır (kaydetmez)
+$minifiedJs = CdnMinify::minifyJs($rawJs);
+$minifiedCss = CdnMinify::minifyCss($rawCss);
+
+// Yayınla: sıkıştır + ledger'a yaz + kalıcı asset URL
+$result = CdnMinify::publishJs($rawJs);  // MinifyPublishResult: assetId, url, kind, size
+$result = CdnMinify::publishCss($rawCss);
+
+// Asset erişim URL'i (script/link ile kullanılır)
+$url = CdnMinify::assetUrl($result->assetId);
+
+// Ledger zincir doğrulama
+$verification = CdnMinify::verifyLedger();  // LedgerVerification: valid, message, entries
+
+if (CdnMinify::isAvailable()) {
+    // Minify servisi kullanılabilir
+}
+```
 
 ---
 
@@ -305,7 +333,9 @@ if (!CdnServicesPdf::isEnabled()) {
 }
 
 // Yükle (value object döner)
+// Yükleme veya HTML'den oluşturma (backend'de PDF_GENERATE_SERVICE_URL gerekir)
 $doc = CdnServicesPdf::upload($request->file('pdf'));
+// veya: $doc = CdnServicesPdf::generateFromHtml('<html><body><h1>Rapor</h1></body></html>', 'rapor.pdf');
 if ($doc instanceof PdfDocument) {
     $id = $doc->id;
 }
@@ -382,7 +412,7 @@ try {
 
 **CdnServicesAuth:** `register`, `login`, `tokenForUser`, `getRegistrationToken`, `requiresRegistrationToken`
 
-**CdnServicesPdf (DDD):** `upload(UploadedFile)`, `list()`, `createSession(documentId)`, `sessionUrl(PdfSession)`, `delete(documentId)`, `isEnabled()`
+**CdnServicesPdf (DDD):** `upload(UploadedFile)`, `generateFromHtml(html, filename)`, `list()`, `createSession(documentId)`, `sessionUrl(PdfSession)`, `delete(documentId)`, `isEnabled()`
 
 **CdnServicesApi:** `getInfo`, `listImages`, `updateMeta`, `replace`, `usage`, `getQuotaBytes`, `getQuotaRemaining`, `importFromUrl`, `createPlaceholder`, `bulkDelete`, `getSignedUrl`, `processedUrl`, `cloudflareProcessedUrl`
 

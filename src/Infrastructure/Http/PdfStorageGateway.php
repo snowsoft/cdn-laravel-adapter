@@ -94,6 +94,25 @@ class PdfStorageGateway implements PdfStorageGatewayInterface
         return $response->successful();
     }
 
+    public function generateFromHtml(string $html, string $filename = 'generated.pdf'): ?PdfDocument
+    {
+        $req = Http::timeout($this->timeout * 2);
+        if ($this->token) {
+            $req = $req->withToken($this->token);
+        }
+        $response = $req->post($this->baseUrl . '/api/pdf/generate', [
+            'html' => $html,
+            'filename' => $filename,
+        ]);
+
+        if (! $response->successful()) {
+            return null;
+        }
+
+        $data = $response->json('document');
+        return $data ? PdfDocument::fromArray($data) : null;
+    }
+
     public function isEnabled(): bool
     {
         $req = Http::timeout(5);
